@@ -1,23 +1,28 @@
-use crate::{itemdata::EmptyItemData, ItemData, ItemType};
+use std::{any::TypeId, collections::HashMap};
 
-pub struct Item<'t, D: ItemData> {
+use crate::{ItemData, ItemType};
+
+pub struct Item<'t> {
     pub item_type: &'t ItemType,
-    pub data: D,
+    data: HashMap<TypeId, Box<dyn ItemData>>,
 }
 
-// TODO: maybe remove and make it a feature
-impl<'t> Item<'t, EmptyItemData> {
-    pub(crate) fn new_nodata(item_type: &'t ItemType) -> Item<EmptyItemData> {
-        Item {
-            item_type,
-            data: EmptyItemData {},
-        }
-    }
-}
-
-impl<'t, D: ItemData> Item<'t, D> {
-    pub(crate) fn new(item_type: &'t ItemType, data: D) -> Self {
+impl<'t> Item<'t> {
+    pub(crate) fn new(item_type: &'t ItemType, data_capacity: usize) -> Self {
+        let data = HashMap::with_capacity(data_capacity);
         Item { item_type, data }
+    }
+
+    #[inline]
+    pub fn add_data<D: ItemData>(&mut self, data: D) {
+        self.data.insert(TypeId::of::<D>(), Box::new(data));
+    }
+
+    #[inline]
+    pub fn get_data<D: ItemData>(&self) -> &D {
+        let data = self.data.get(&TypeId::of::<D>()).unwrap();
+        // TODO: unwrap check
+        data.as_any().downcast_ref::<D>().unwrap()
     }
 }
 
@@ -28,7 +33,7 @@ mod tests {
     #[test]
     fn create_item() {
         let item_type = ItemType {};
-        let item = Item::new_nodata(&item_type);
+        let item = Item::new(&item_type, 0);
         assert_eq!(*item.item_type, item_type);
     }
 }

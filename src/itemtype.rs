@@ -26,11 +26,7 @@ mod tests {
         struct SaturationData {
             saturation: i16,
         }
-        impl ItemData for SaturationData {
-            fn as_any(&self) -> &dyn std::any::Any {
-                self
-            }
-        }
+        impl ItemData for SaturationData {}
 
         let item_type = ItemType {};
         let saturation = 8;

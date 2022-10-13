@@ -11,11 +11,7 @@ pub fn item_data_derive(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let gen = quote! {
-        impl #impl_generics shrub::ItemData for #name #ty_generics #where_clause {
-            fn as_any(&self) -> &dyn Any {
-                self
-            }
-        }
+        impl #impl_generics shrub::ItemData for #name #ty_generics #where_clause {}
     };
     gen.into()
 }

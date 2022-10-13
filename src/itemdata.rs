@@ -1,13 +1,10 @@
 extern crate self as shrub; // this is needed so that derive(ItemData) works inside the package itself
 
-use std::any::Any;
-
+use downcast_rs::{impl_downcast, Downcast};
 use shrub_macros::ItemData;
 
-pub trait ItemData: 'static {
-    // TODO: remove as_any because its weird, isnt there an other possibility?
-    fn as_any(&self) -> &dyn Any;
-}
+pub trait ItemData: Downcast + 'static {}
+impl_downcast!(ItemData);
 
 #[derive(ItemData)]
 pub struct EmptyItemData {}

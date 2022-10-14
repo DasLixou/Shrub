@@ -20,15 +20,17 @@ impl<'t> Item<'t> {
     }
 
     #[inline]
-    pub fn add_data<D: ItemData>(&mut self, data: D) {
-        self.data.insert(TypeId::of::<D>(), Box::new(data));
+    pub fn add_data<D: ItemDataHack>(&mut self, item_data: D) {
+        self.data.reserve(D::CAPACITY);
+        item_data.add_data(&mut self.data);
     }
 
     #[inline]
-    pub fn get_data<D: ItemData>(&self) -> &D {
-        let data = self.data.get(&TypeId::of::<D>()).unwrap();
-        // TODO: unwrap check
-        data.as_any().downcast_ref::<D>().unwrap()
+    pub fn get_data<D: ItemData>(&self) -> Option<&D> {
+        match self.data.get(&TypeId::of::<D>()) {
+            Some(d) => Some(d.as_any().downcast_ref::<D>().unwrap()),
+            None => None,
+        }
     }
 }
 
@@ -53,7 +55,10 @@ mod tests {
         let saturation = 7;
         let item = Item::with_data(&item_type, SaturationData { saturation });
         assert_eq!(*item.item_type, item_type);
-        assert_eq!(item.get_data::<SaturationData>().saturation, saturation);
+        assert_eq!(
+            item.get_data::<SaturationData>().unwrap().saturation,
+            saturation
+        );
     }
 
     #[test]
@@ -74,7 +79,10 @@ mod tests {
             (SaturationData { saturation }, SpeedData { speed }),
         );
         assert_eq!(*item.item_type, item_type);
-        assert_eq!(item.get_data::<SaturationData>().saturation, saturation);
-        assert_eq!(item.get_data::<SpeedData>().speed, speed);
+        assert_eq!(
+            item.get_data::<SaturationData>().unwrap().saturation,
+            saturation
+        );
+        assert_eq!(item.get_data::<SpeedData>().unwrap().speed, speed);
     }
 }

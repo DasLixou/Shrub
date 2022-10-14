@@ -38,7 +38,10 @@ mod tests {
         item.add_data(SaturationData { saturation });
 
         assert_eq!(item.item_type, &item_type);
-        assert_eq!(item.get_data::<SaturationData>().saturation, saturation);
+        assert_eq!(
+            item.get_data::<SaturationData>().unwrap().saturation,
+            saturation
+        );
     }
 
     #[test]
@@ -57,7 +60,10 @@ mod tests {
         let speed = 13.4;
         let item = item_type.item_with_data((SaturationData { saturation }, SpeedData { speed }));
         assert_eq!(*item.item_type, item_type);
-        assert_eq!(item.get_data::<SaturationData>().saturation, saturation);
-        assert_eq!(item.get_data::<SpeedData>().speed, speed);
+        assert_eq!(
+            item.get_data::<SaturationData>().unwrap().saturation,
+            saturation
+        );
+        assert_eq!(item.get_data::<SpeedData>().unwrap().speed, speed);
     }
 }

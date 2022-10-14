@@ -3,6 +3,7 @@ mod item;
 mod itemdata;
 mod itemtype;
 mod registry;
+mod utils;
 
 pub use inventory::Inventory;
 pub use item::Item;

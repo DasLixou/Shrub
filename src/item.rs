@@ -2,9 +2,11 @@ use std::{any::TypeId, collections::HashMap};
 
 use crate::{utils::add_data::ItemDataHack, ItemData, ItemType};
 
+pub(crate) type ItemDataMap = HashMap<TypeId, Box<dyn ItemData>>;
+
 pub struct Item<'t> {
     pub item_type: &'t ItemType,
-    data: HashMap<TypeId, Box<dyn ItemData>>,
+    data: ItemDataMap,
 }
 
 impl<'t> Item<'t> {
@@ -29,7 +31,7 @@ impl<'t> Item<'t> {
     pub fn get_data<D: ItemData>(&self) -> Option<&D> {
         match self.data.get(&TypeId::of::<D>()) {
             Some(d) => Some(d.as_any().downcast_ref::<D>().unwrap()),
-            None => None,
+            None => self.item_type.get_data::<D>(),
         }
     }
 }
@@ -40,14 +42,14 @@ mod tests {
 
     #[test]
     fn create_item_with_capacity() {
-        let item_type = ItemType {};
+        let item_type = ItemType::with_capacity(0);
         let item = Item::with_capacity(&item_type, 0);
         assert_eq!(*item.item_type, item_type);
     }
 
     #[test]
     fn create_item_with_single_data() {
-        let item_type = ItemType {};
+        let item_type = ItemType::with_capacity(0);
         struct SaturationData {
             saturation: i16,
         }
@@ -63,7 +65,7 @@ mod tests {
 
     #[test]
     fn create_item_with_multiple_data() {
-        let item_type = ItemType {};
+        let item_type = ItemType::with_capacity(0);
         struct SaturationData {
             saturation: i16,
         }

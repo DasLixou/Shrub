@@ -1,27 +1,27 @@
 // this is a edited version of https://github.com/leudz/shipyard/blob/master/src/add_component.rs
 
-use std::{any::TypeId, collections::HashMap};
+use std::any::TypeId;
 
-use crate::ItemData;
+use crate::{item::ItemDataMap, ItemData};
 
 pub trait ItemDataHack {
     const CAPACITY: usize;
 
-    fn add_data(self, map: &mut HashMap<TypeId, Box<dyn ItemData>>);
+    fn add_data(self, map: &mut ItemDataMap);
 }
 
 impl ItemDataHack for () {
     const CAPACITY: usize = 0;
 
     #[inline]
-    fn add_data(self, _map: &mut HashMap<TypeId, Box<dyn ItemData>>) {}
+    fn add_data(self, _map: &mut ItemDataMap) {}
 }
 
 impl<D: ItemData> ItemDataHack for D {
     const CAPACITY: usize = 1;
 
     #[inline]
-    fn add_data(self, map: &mut HashMap<TypeId, Box<dyn ItemData>>) {
+    fn add_data(self, map: &mut ItemDataMap) {
         map.insert(TypeId::of::<D>(), Box::new(self));
     }
 }
@@ -37,7 +37,7 @@ macro_rules! impl_add_itemdata {
         impl<$($type: ItemData,)+> ItemDataHack for ($($type,)+)
         {
             const CAPACITY: usize = <[()]>::len(&[$(replace_expr!(($index) ())),*]);
-            fn add_data(self, map: &mut HashMap<TypeId, Box<dyn ItemData>>) {
+            fn add_data(self, map: &mut ItemDataMap) {
                 $(
                     map.insert(TypeId::of::<$type>(), Box::new(self.$index));
                 )+

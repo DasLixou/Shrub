@@ -35,6 +35,8 @@ impl<'t> Item<'t> {
         }
     }
 
+    /// # Attention
+    /// Unlike `get_data`, `get_data_mut` can only borrow data from this item and will return `None` when the item doesnt include this Data and WON'T SEARCH IN THE ITEMTYPE for it.
     #[inline]
     pub fn get_data_mut<D: ItemData>(&mut self) -> Option<&mut D> {
         match self.data.get_mut(&TypeId::of::<D>()) {

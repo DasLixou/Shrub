@@ -14,23 +14,60 @@ impl std::fmt::Debug for ItemType {
 }
 
 impl ItemType {
+    /// Creates a new ItemType, the HashMap for the data will not allocate until it is first inserted into.
+    pub fn new() -> Self {
+        let data = HashMap::new();
+        ItemType { data }
+    }
+
+    /// Creates a new ItemType with the given data for the item.
     pub fn with_data<D: ItemDataReflection>(item_data: D) -> Self {
         let mut data = HashMap::with_capacity(D::CAPACITY);
         item_data.add_data(&mut data);
         ItemType { data }
     }
 
+    /// Creates a new ItemType and reserves the given amount of capacity for the data map.
     pub fn with_capacity(data_capacity: usize) -> Self {
         let data = HashMap::with_capacity(data_capacity);
         ItemType { data }
     }
 
+    /// Adds the given data to the ItemType. When data with the given datatype already exists, it will be completly overriden.
+    ///
+    /// # Examples
+    /// ```
+    /// use shrub::{ItemData, ItemType};
+    ///
+    /// struct CoolData {
+    ///     is_cool: bool,
+    /// }
+    /// impl ItemData for CoolData {}
+    ///
+    /// let mut item_type = ItemType::with_capacity(1);
+    /// item_type.add_data(CoolData { is_cool: true });
+    /// assert_eq!(item_type.get_data::<CoolData>().unwrap().is_cool, true);
+    /// ```
     #[inline]
     pub fn add_data<D: ItemDataReflection>(&mut self, item_data: D) {
         self.data.reserve(D::CAPACITY);
         item_data.add_data(&mut self.data);
     }
 
+    /// Borrows data of the given datatype from the ItemType.
+    ///
+    /// # Examples
+    /// ```
+    /// use shrub::{ItemData, ItemType};
+    ///
+    /// struct CoolData {
+    ///     is_cool: bool,
+    /// }
+    /// impl ItemData for CoolData {}
+    ///
+    /// let item_type = ItemType::with_data(CoolData { is_cool: true });
+    /// assert_eq!(item_type.get_data::<CoolData>().unwrap().is_cool, true);
+    /// ```
     #[inline]
     pub fn get_data<D: ItemData>(&self) -> Option<&D> {
         match self.data.get(&TypeId::of::<D>()) {
@@ -39,6 +76,22 @@ impl ItemType {
         }
     }
 
+    /// Borrows data fo the given datatype from the ItemType as mutable.
+    ///
+    /// # Examples
+    /// ```
+    /// use shrub::{ItemData, ItemType};
+    ///
+    /// struct CoolData {
+    ///     is_cool: bool,
+    /// }
+    /// impl ItemData for CoolData {}
+    ///
+    /// let mut item_type = ItemType::with_data(CoolData { is_cool: true });
+    /// assert_eq!(item_type.get_data::<CoolData>().unwrap().is_cool, true);
+    /// item_type.get_data_mut::<CoolData>().unwrap().is_cool = false;
+    /// assert_eq!(item_type.get_data::<CoolData>().unwrap().is_cool, false);
+    /// ```
     #[inline]
     pub fn get_data_mut<D: ItemData>(&mut self) -> Option<&mut D> {
         match self.data.get_mut(&TypeId::of::<D>()) {
@@ -47,10 +100,18 @@ impl ItemType {
         }
     }
 
+    /// Creates a new Item from this type.
+    /// The HashMap for the itemdata will not allocate until it is first inserted into.
+    pub fn item_new(&self) -> Item {
+        Item::new(self)
+    }
+
+    /// Creates a new Item from this type with the given data.
     pub fn item_with_data<D: ItemDataReflection>(&self, item_data: D) -> Item {
         Item::with_data(self, item_data)
     }
 
+    /// Creates a new Item from this type and reserves the given amount of capacity for the data map.
     pub fn item_with_capacity(&self, data_capacity: usize) -> Item {
         Item::with_capacity(self, data_capacity)
     }
@@ -68,8 +129,8 @@ mod tests {
 
     #[test]
     fn create_item() {
-        let item_type = ItemType::with_capacity(0);
-        let item = item_type.item_with_capacity(0);
+        let item_type = ItemType::new();
+        let item = item_type.item_new();
         assert_eq!(item.item_type, &item_type);
     }
 
@@ -80,7 +141,7 @@ mod tests {
         }
         impl ItemData for SaturationData {}
 
-        let item_type = ItemType::with_capacity(0);
+        let item_type = ItemType::new();
         let saturation = 8;
         let mut item = item_type.item_with_capacity(1);
         item.add_data(SaturationData { saturation });
@@ -103,7 +164,7 @@ mod tests {
         }
         impl ItemData for SpeedData {}
 
-        let item_type = ItemType::with_capacity(0);
+        let item_type = ItemType::new();
         let saturation = 12;
         let speed = 13.4;
         let item = item_type.item_with_data((SaturationData { saturation }, SpeedData { speed }));
@@ -125,7 +186,7 @@ mod tests {
         let is_cool = true;
         let item_type = ItemType::with_data(CoolData { is_cool });
         assert_eq!(item_type.get_data::<CoolData>().unwrap().is_cool, is_cool);
-        let item = item_type.item_with_capacity(0);
+        let item = item_type.item_new();
         assert_eq!(item.get_data::<CoolData>().unwrap().is_cool, is_cool);
     }
 

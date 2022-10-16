@@ -1,6 +1,6 @@
 use std::{any::TypeId, collections::HashMap};
 
-use crate::{utils::add_data::ItemDataHack, ItemData, ItemType};
+use crate::{itemdata_reflection::ItemDataReflection, ItemData, ItemType};
 
 pub(crate) type ItemDataMap = HashMap<TypeId, Box<dyn ItemData>>;
 
@@ -10,7 +10,7 @@ pub struct Item<'t> {
 }
 
 impl<'t> Item<'t> {
-    pub(crate) fn with_data<D: ItemDataHack>(item_type: &'t ItemType, item_data: D) -> Self {
+    pub(crate) fn with_data<D: ItemDataReflection>(item_type: &'t ItemType, item_data: D) -> Self {
         let mut data = HashMap::with_capacity(D::CAPACITY);
         item_data.add_data(&mut data);
         Item { item_type, data }
@@ -22,7 +22,7 @@ impl<'t> Item<'t> {
     }
 
     #[inline]
-    pub fn add_data<D: ItemDataHack>(&mut self, item_data: D) {
+    pub fn add_data<D: ItemDataReflection>(&mut self, item_data: D) {
         self.data.reserve(D::CAPACITY);
         item_data.add_data(&mut self.data);
     }

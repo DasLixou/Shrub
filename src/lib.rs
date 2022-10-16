@@ -1,9 +1,9 @@
 mod inventory;
 mod item;
 mod itemdata;
+mod itemdata_reflection;
 mod itemtype;
 mod registry;
-mod utils;
 
 pub use inventory::Inventory;
 pub use item::Item;

@@ -39,6 +39,14 @@ impl ItemType {
         }
     }
 
+    #[inline]
+    pub fn get_data_mut<D: ItemData>(&mut self) -> Option<&mut D> {
+        match self.data.get_mut(&TypeId::of::<D>()) {
+            Some(d) => Some(d.as_any_mut().downcast_mut::<D>().unwrap()),
+            None => None,
+        }
+    }
+
     pub fn item_with_data<D: ItemDataReflection>(&self, item_data: D) -> Item {
         Item::with_data(self, item_data)
     }

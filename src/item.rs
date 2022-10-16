@@ -34,6 +34,14 @@ impl<'t> Item<'t> {
             None => self.item_type.get_data::<D>(),
         }
     }
+
+    #[inline]
+    pub fn get_data_mut<D: ItemData>(&mut self) -> Option<&mut D> {
+        match self.data.get_mut(&TypeId::of::<D>()) {
+            Some(d) => Some(d.as_any_mut().downcast_mut::<D>().unwrap()),
+            None => None,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -86,5 +94,27 @@ mod tests {
             saturation
         );
         assert_eq!(item.get_data::<SpeedData>().unwrap().speed, speed);
+    }
+
+    #[test]
+    fn create_item_with_single_mutable_data() {
+        let item_type = ItemType::with_capacity(0);
+        struct SaturationData {
+            saturation: i16,
+        }
+        impl ItemData for SaturationData {}
+        let saturation = 7;
+        let mut item = Item::with_data(&item_type, SaturationData { saturation });
+        assert_eq!(*item.item_type, item_type);
+        assert_eq!(
+            item.get_data::<SaturationData>().unwrap().saturation,
+            saturation
+        );
+        let new_sat = 12;
+        item.get_data_mut::<SaturationData>().unwrap().saturation = new_sat;
+        assert_eq!(
+            item.get_data::<SaturationData>().unwrap().saturation,
+            new_sat
+        );
     }
 }

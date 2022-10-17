@@ -1,3 +1,7 @@
+//! Shrub is an Item and Inventory System for games.
+//!
+//! # Features
+//! - **proc** *(default)* &mdash; re-exports procedural macros from `shrub_macros`
 mod inventory;
 mod item;
 mod itemdata;

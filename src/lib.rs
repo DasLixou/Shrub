@@ -11,5 +11,5 @@ pub use itemdata::ItemData;
 pub use itemtype::ItemType;
 pub use registry::Registry;
 
-// Proc
+#[cfg(feature = "proc")]
 pub use shrub_macros::ItemData;

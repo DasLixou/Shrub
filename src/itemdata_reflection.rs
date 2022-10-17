@@ -12,9 +12,7 @@ impl ItemDataReflection for () {
     const CAPACITY: usize = 0;
 
     #[inline]
-    fn add_data(self, _map: &mut ItemDataMap) {
-        println!("{}", (12, 13).1);
-    }
+    fn add_data(self, _map: &mut ItemDataMap) {}
 }
 
 impl<D: ItemData> ItemDataReflection for D {

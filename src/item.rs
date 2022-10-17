@@ -4,6 +4,7 @@ use crate::{itemdata_reflection::ItemDataReflection, ItemData, ItemType};
 
 pub(crate) type ItemDataMap = HashMap<TypeId, Box<dyn ItemData>>;
 
+/// An Item holds his `ItemType` together with custom `ItemData`s for this specific Item.
 pub struct Item<'t> {
     pub item_type: &'t ItemType,
     data: ItemDataMap,

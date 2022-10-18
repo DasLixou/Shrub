@@ -102,6 +102,26 @@ impl ItemType {
         }
     }
 
+    /// Remove data of passed type from itemtype
+    ///
+    /// # Examples
+    /// ```
+    /// use shrub::{ItemData, ItemType};
+    ///
+    /// struct SimpleData(bool);
+    /// impl ItemData for SimpleData {}
+    /// let mut item_type = ItemType::with_data(SimpleData(true));
+    /// assert!(item_type.get_data::<SimpleData>().is_some());
+    /// let _data = item_type.remove_data::<SimpleData>();
+    /// assert!(item_type.get_data::<SimpleData>().is_none());
+    /// ```
+    pub fn remove_data<D: ItemData>(&mut self) -> Option<Box<D>> {
+        match self.data.remove(&TypeId::of::<D>()) {
+            Some(d) => Some(d.downcast::<D>().ok().unwrap()),
+            None => None,
+        }
+    }
+
     /// Creates a new Item from this type.
     /// The HashMap for the itemdata will not allocate until it is first inserted into.
     pub fn item_new(&self) -> Item {

@@ -103,6 +103,27 @@ impl<'t> Item<'t> {
             None => None,
         }
     }
+
+    /// Remove data of passed type from item
+    ///
+    /// # Examples
+    /// ```
+    /// use shrub::{ItemData, ItemType};
+    ///
+    /// let item_type = ItemType::new();
+    /// struct SimpleData(bool);
+    /// impl ItemData for SimpleData {}
+    /// let mut item = item_type.item_with_data(SimpleData(true));
+    /// assert!(item.get_data::<SimpleData>().is_some());
+    /// let _data = item.remove_data::<SimpleData>();
+    /// assert!(item.get_data::<SimpleData>().is_none());
+    /// ```
+    pub fn remove_data<D: ItemData>(&mut self) -> Option<Box<D>> {
+        match self.data.remove(&TypeId::of::<D>()) {
+            Some(d) => Some(d.downcast::<D>().ok().unwrap()),
+            None => None,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -177,5 +198,16 @@ mod tests {
             item.get_data::<SaturationData>().unwrap().saturation,
             new_sat
         );
+    }
+
+    #[test]
+    fn remove_data_from_item() {
+        let item_type = ItemType::new();
+        struct SimpleData(bool);
+        impl ItemData for SimpleData {}
+        let mut item = item_type.item_with_data(SimpleData(true));
+        assert!(item.get_data::<SimpleData>().is_some());
+        item.remove_data::<SimpleData>();
+        assert!(item.get_data::<SimpleData>().is_none());
     }
 }

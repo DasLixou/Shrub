@@ -3,6 +3,7 @@ use std::{any::TypeId, collections::HashMap};
 use crate::{item::ItemDataMap, itemdata_reflection::ItemDataReflection, Item, ItemData};
 
 /// An ItemType holds data that is used by the `Item`s of the type.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct ItemType {
     data: ItemDataMap,
 }

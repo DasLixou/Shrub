@@ -2,6 +2,7 @@
 //!
 //! # Features
 //! - **proc** *(default)* &mdash; re-exports procedural macros from `shrub_macros`
+//! - **serde** &mdash; derives `Serialize` and `Deserialize` traits
 mod inventory;
 mod item;
 mod itemdata;

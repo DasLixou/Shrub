@@ -6,7 +6,9 @@ edition = "2021"
 [dependencies]
 downcast-rs = { version = "1.2.0", default-features = false }
 shrub_macros = { path = "macros", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
 
 [features]
 default = ["proc"]
 proc = ["dep:shrub_macros"]
+serde = ["dep:serde"]

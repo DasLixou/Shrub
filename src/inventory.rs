@@ -4,11 +4,18 @@ pub trait Inventory<'a> {
     fn add_item(&mut self, item: Item<'a>) -> Option<Item<'a>>;
 }
 
+pub trait InventoryGetItem<'a, T> {
+    fn get_item(&self, t: T) -> Option<&'a Item>;
+    fn get_item_mut(&mut self, t: T) -> Option<&'a mut Item>;
+}
+
 #[cfg(test)]
 mod tests {
     use std::vec;
 
     use crate::{Inventory, Item, ItemData, ItemType};
+
+    use super::InventoryGetItem;
 
     struct SimpleInventory<'a> {
         pub items: Vec<Item<'a>>,
@@ -19,7 +26,17 @@ mod tests {
             None
         }
     }
+    impl<'a> InventoryGetItem<'a, usize> for SimpleInventory<'a> {
+        fn get_item(&self, t: usize) -> Option<&'a Item> {
+            self.items.get(t)
+        }
 
+        fn get_item_mut(&mut self, t: usize) -> Option<&'a mut Item> {
+            self.items.get_mut(t)
+        }
+    }
+
+    #[derive(PartialEq, Eq, Debug)]
     enum Category {
         Weapon,
         Food,
@@ -72,5 +89,16 @@ mod tests {
         assert!(nested_inventory.weapons.items.len() == 1);
         assert!(nested_inventory.food.items.is_empty());
         assert!(nested_inventory.blocks.items.is_empty());
+
+        assert_eq!(
+            nested_inventory
+                .weapons
+                .get_item(0)
+                .unwrap()
+                .get_data::<CategoryData>()
+                .unwrap()
+                .0,
+            Category::Weapon
+        );
     }
 }

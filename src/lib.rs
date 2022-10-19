@@ -10,7 +10,7 @@ mod itemdata_reflection;
 mod itemtype;
 
 pub use inventory::Inventory;
-pub use inventory::InventoryGetItem;
+pub use inventory::InventorySelector;
 pub use item::Item;
 pub use itemdata::ItemData;
 pub use itemtype::ItemType;

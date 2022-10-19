@@ -1,21 +1,114 @@
 use crate::Item;
 
+/// Trait to mark struct as inventory and provide basic function api
 pub trait Inventory<'a> {
+    /// Adds an item to the inventory.
+    /// * when the inventory for some reason can't pickup the item, it will return the item in `Some(Item)`
+    ///
+    /// # Examples
+    /// ```
+    /// use std::vec;
+    /// use shrub::{Inventory, InventorySelector, Item, ItemData, ItemType};
+    ///
+    /// struct SimpleInventory<'a> {
+    ///     items: Vec<Item<'a>>,
+    /// }
+    /// impl<'a> Inventory<'a> for SimpleInventory<'a> {
+    ///     fn add_item(&mut self, item: Item<'a>) -> Option<Item<'a>> {
+    ///         self.items.push(item);
+    ///         None
+    ///     }
+    /// }
+    ///
+    /// let mut inventory = SimpleInventory { items: vec![] };
+    /// let item_type = ItemType::new();
+    /// let item = item_type.item_new();
+    /// if let Some(i) = inventory.add_item(item) {
+    ///     println!("Couldn't add item to inventory");
+    /// }
+    /// ```
     fn add_item(&mut self, item: Item<'a>) -> Option<Item<'a>>;
 }
 
-pub trait InventoryGetItem<'a, T> {
-    fn get_item(&self, t: T) -> Option<&'a Item>;
-    fn get_item_mut(&mut self, t: T) -> Option<&'a mut Item>;
+/// Trait to implement selecting an item from an inventory
+pub trait InventorySelector<'a, S> {
+    /// Borrows an item with the specified selector
+    ///
+    /// # Examples
+    /// ```
+    /// # use std::vec;
+    /// use shrub::{Inventory, InventorySelector, Item, ItemData, ItemType};
+    ///
+    /// struct SimpleInventory<'a> {
+    ///     items: Vec<Item<'a>>,
+    /// }
+    /// # impl<'a> Inventory<'a> for SimpleInventory<'a> {
+    /// #     fn add_item(&mut self, item: Item<'a>) -> Option<Item<'a>> {
+    /// #         self.items.push(item);
+    /// #         None
+    /// #     }
+    /// # }
+    /// impl<'a> InventorySelector<'a, usize> for SimpleInventory<'a> {
+    ///     fn get_item(&self, t: usize) -> Option<&'a Item> {
+    ///         self.items.get(t)
+    ///     }
+    ///     
+    ///     // ...
+    ///     # fn get_item_mut(&mut self, t: usize) -> Option<&'a mut Item> {
+    ///     #     self.items.get_mut(t)
+    ///     # }
+    /// }
+    ///
+    /// let mut inventory = SimpleInventory { items: vec![] };
+    /// let item_type = ItemType::new();
+    /// let item = item_type.item_new();
+    /// inventory.add_item(item);
+    ///
+    /// let item = inventory.get_item(0);
+    /// ```
+    fn get_item(&self, selector: S) -> Option<&'a Item>;
+    /// Borrows an item as mutable with the specified selector
+    ///
+    /// # Examples
+    /// ```
+    /// # use std::vec;
+    /// use shrub::{Inventory, InventorySelector, Item, ItemData, ItemType};
+    ///
+    /// struct SimpleInventory<'a> {
+    ///     items: Vec<Item<'a>>,
+    /// }
+    /// # impl<'a> Inventory<'a> for SimpleInventory<'a> {
+    /// #     fn add_item(&mut self, item: Item<'a>) -> Option<Item<'a>> {
+    /// #         self.items.push(item);
+    /// #         None
+    /// #     }
+    /// # }
+    /// impl<'a> InventorySelector<'a, usize> for SimpleInventory<'a> {
+    ///     # fn get_item_mut(&mut self, t: usize) -> Option<&'a mut Item> {
+    ///     #     self.items.get_mut(t)
+    ///     # }
+    ///     
+    ///     // ...
+    ///     # fn get_item(&self, t: usize) -> Option<&'a Item> {
+    ///     #     self.items.get(t)
+    ///     # }
+    /// }
+    ///
+    /// let mut inventory = SimpleInventory { items: vec![] };
+    /// let item_type = ItemType::new();
+    /// let item = item_type.item_new();
+    /// inventory.add_item(item);
+    ///
+    /// let mut item = inventory.get_item_mut(0);
+    /// ```
+    fn get_item_mut(&mut self, selector: S) -> Option<&'a mut Item>;
 }
 
 #[cfg(test)]
 mod tests {
     use std::vec;
 
-    use crate::{Inventory, Item, ItemData, ItemType};
-
-    use super::InventoryGetItem;
+    use crate::{Inventory, InventorySelector, Item, ItemData, ItemType};
 
     struct SimpleInventory<'a> {
         pub items: Vec<Item<'a>>,
@@ -26,7 +119,7 @@ mod tests {
             None
         }
     }
-    impl<'a> InventoryGetItem<'a, usize> for SimpleInventory<'a> {
+    impl<'a> InventorySelector<'a, usize> for SimpleInventory<'a> {
         fn get_item(&self, t: usize) -> Option<&'a Item> {
             self.items.get(t)
         }

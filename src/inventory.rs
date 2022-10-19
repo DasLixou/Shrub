@@ -49,13 +49,21 @@ pub trait InventorySelector<'a, S> {
     /// #     }
     /// # }
     /// impl<'a> InventorySelector<'a, usize> for SimpleInventory<'a> {
-    ///     fn get_item(&self, t: usize) -> Option<&'a Item> {
-    ///         self.items.get(t)
+    ///     fn get_item(&self, selector: usize) -> Option<&'a Item> {
+    ///         self.items.get(selector)
     ///     }
     ///     
     ///     // ...
-    ///     # fn get_item_mut(&mut self, t: usize) -> Option<&'a mut Item> {
-    ///     #     self.items.get_mut(t)
+    ///     # fn get_item_mut(&mut self, selector: usize) -> Option<&'a mut Item> {
+    ///     #     self.items.get_mut(selector)
+    ///     # }
+    ///     #
+    ///     # fn remove_item(&mut self, selector: usize) -> Option<Item<'a>> {
+    ///     #     if selector < self.items.len() {
+    ///     #         Some(self.items.remove(selector))
+    ///     #     } else {
+    ///     #         None
+    ///     #     }
     ///     # }
     /// }
     ///
@@ -67,6 +75,7 @@ pub trait InventorySelector<'a, S> {
     /// let item = inventory.get_item(0);
     /// ```
     fn get_item(&self, selector: S) -> Option<&'a Item>;
+
     /// Borrows an item as mutable with the specified selector
     ///
     /// # Examples
@@ -84,13 +93,64 @@ pub trait InventorySelector<'a, S> {
     /// #     }
     /// # }
     /// impl<'a> InventorySelector<'a, usize> for SimpleInventory<'a> {
-    ///     # fn get_item_mut(&mut self, t: usize) -> Option<&'a mut Item> {
-    ///     #     self.items.get_mut(t)
-    ///     # }
+    ///     fn get_item_mut(&mut self, selector: usize) -> Option<&'a mut Item> {
+    ///         self.items.get_mut(selector)
+    ///     }
     ///     
     ///     // ...
-    ///     # fn get_item(&self, t: usize) -> Option<&'a Item> {
-    ///     #     self.items.get(t)
+    ///     # fn get_item(&self, selector: usize) -> Option<&'a Item> {
+    ///     #     self.items.get(selector)
+    ///     # }
+    ///     #
+    ///     # fn remove_item(&mut self, selector: usize) -> Option<Item<'a>> {
+    ///     #     if selector < self.items.len() {
+    ///     #         Some(self.items.remove(selector))
+    ///     #     } else {
+    ///     #         None
+    ///     #     }
+    ///     # }
+    /// }
+    ///
+    /// let mut inventory = SimpleInventory { items: vec![] };
+    /// let item_type = ItemType::new();
+    /// let item = item_type.item_new();
+    /// inventory.add_item(item);
+    ///
+    /// let mut item = inventory.remove_item(0);
+    /// ```
+    fn get_item_mut(&mut self, selector: S) -> Option<&'a mut Item>;
+
+    /// Removes an item with the specified selector
+    ///
+    /// # Examples
+    /// ```
+    /// # use std::vec;
+    /// use shrub::{Inventory, InventorySelector, Item, ItemData, ItemType};
+    ///
+    /// struct SimpleInventory<'a> {
+    ///     items: Vec<Item<'a>>,
+    /// }
+    /// # impl<'a> Inventory<'a> for SimpleInventory<'a> {
+    /// #     fn add_item(&mut self, item: Item<'a>) -> Option<Item<'a>> {
+    /// #         self.items.push(item);
+    /// #         None
+    /// #     }
+    /// # }
+    /// impl<'a> InventorySelector<'a, usize> for SimpleInventory<'a> {
+    ///     fn remove_item(&mut self, selector: usize) -> Option<Item<'a>> {
+    ///         if selector < self.items.len() {
+    ///             Some(self.items.remove(selector))
+    ///         } else {
+    ///             None
+    ///         }
+    ///     }
+    ///
+    ///     // ...
+    ///     # fn get_item_mut(&mut self, selector: usize) -> Option<&'a mut Item> {
+    ///     #     self.items.get_mut(selector)
+    ///     # }
+    ///     # fn get_item(&self, selector: usize) -> Option<&'a Item> {
+    ///     #     self.items.get(selector)
     ///     # }
     /// }
     ///
@@ -101,7 +161,7 @@ pub trait InventorySelector<'a, S> {
     ///
     /// let mut item = inventory.get_item_mut(0);
     /// ```
-    fn get_item_mut(&mut self, selector: S) -> Option<&'a mut Item>;
+    fn remove_item(&mut self, selector: S) -> Option<Item<'a>>;
 }
 
 #[cfg(test)]
@@ -120,12 +180,20 @@ mod tests {
         }
     }
     impl<'a> InventorySelector<'a, usize> for SimpleInventory<'a> {
-        fn get_item(&self, t: usize) -> Option<&'a Item> {
-            self.items.get(t)
+        fn get_item(&self, selector: usize) -> Option<&'a Item> {
+            self.items.get(selector)
         }
 
-        fn get_item_mut(&mut self, t: usize) -> Option<&'a mut Item> {
-            self.items.get_mut(t)
+        fn get_item_mut(&mut self, selector: usize) -> Option<&'a mut Item> {
+            self.items.get_mut(selector)
+        }
+
+        fn remove_item(&mut self, selector: usize) -> Option<Item<'a>> {
+            if selector < self.items.len() {
+                Some(self.items.remove(selector))
+            } else {
+                None
+            }
         }
     }
 
@@ -193,5 +261,18 @@ mod tests {
                 .0,
             Category::Weapon
         );
+    }
+
+    #[test]
+    fn remove_item() {
+        let mut inventory = SimpleInventory { items: vec![] };
+        let item_type = ItemType::new();
+        let item = item_type.item_new();
+
+        assert_eq!(inventory.items.len(), 0);
+        assert!(inventory.add_item(item).is_none());
+        assert_eq!(inventory.items.len(), 1);
+        assert!(inventory.remove_item(0).is_some());
+        assert_eq!(inventory.items.len(), 0);
     }
 }
